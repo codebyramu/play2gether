@@ -95,30 +95,18 @@ export default function BigScreen() {
           <button className="tv-btn secondary" style={{padding: '1rem 3rem', fontSize: '2rem'}} onClick={() => setState('INIT')}>◀ BACK</button>
         </div>
 
-        <div className="tv-center">
+        <div className="tv-center" style={{justifyContent: 'flex-start', paddingTop: '2rem'}}>
           <h2 style={{fontSize: '4rem', color: 'var(--accent)', textShadow: '4px 4px 0 var(--text-dark)', marginBottom: '2rem'}}>Game Library</h2>
-          <div className="game-carousel">
-            <div className="nav-btn" onClick={() => {
-              setSelectedGameIdx(prev => {
-                let next = prev - 1;
-                if (next < 0) next = games.length - 1;
-                return next;
-              });
-            }}>◀</div>
-            <div className="game-card" style={{transform: 'rotate(0deg)'}}>
-              <div className="game-thumb" style={{background: games[selectedGameIdx].color}}>
-                <span className="thumb-emoji">{games[selectedGameIdx].emoji}</span>
+          <div className="games-grid">
+            {games.map((g) => (
+              <div key={g.id} className="game-card" style={{transform: 'rotate(0deg)'}}>
+                <div className="game-thumb" style={{background: g.color}}>
+                  <span className="thumb-emoji">{g.emoji}</span>
+                </div>
+                <h3>{g.title}</h3>
+                <p>{g.desc}</p>
               </div>
-              <h3>{games[selectedGameIdx].title}</h3>
-              <p>{games[selectedGameIdx].desc}</p>
-            </div>
-            <div className="nav-btn" onClick={() => {
-              setSelectedGameIdx(prev => {
-                let next = prev + 1;
-                if (next >= games.length) next = 0;
-                return next;
-              });
-            }}>▶</div>
+            ))}
           </div>
         </div>
       </div>

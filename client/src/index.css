@@ -155,3 +155,48 @@ h1, h2, h3, h4 {
 .action-btn { width: 110px; height: 110px; border-radius: 50%; border: 8px solid var(--text-dark); font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: white; box-shadow: 0 10px 0 var(--text-dark); }
 .action-btn:active { transform: translateY(10px); box-shadow: 0 0 0 var(--text-dark); }
 .action-btn.dash { background: var(--secondary); margin-left: -50px; } .action-btn.jump { background: var(--primary); }
+
+/* Force touch actions to work */
+.d-btn, .action-btn, .phone-btn {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Make phone fonts smaller */
+.phone-title { font-size: 2.5rem; }
+.phone-input { font-size: 2rem; max-width: 280px; }
+.phone-btn { font-size: 1.8rem; padding: 1rem; max-width: 280px; }
+.avatar-preview { font-size: 5rem; width: 120px; height: 120px; }
+.jumping-avatar { font-size: 6rem; }
+.phone-text { font-size: 1.4rem; }
+
+/* Landscape mode for controller */
+@media (orientation: portrait) {
+  .controller-layout::before {
+    content: 'Please rotate your phone to landscape 🔄';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-color); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; text-align: center; padding: 2rem; font-family: 'Fredoka One', cursive;
+  }
+}
+.controller-layout {
+  flex-direction: row; justify-content: space-between; align-items: flex-end; padding: 2rem;
+}
+.status-bar { position: absolute; top: 1rem; left: 50%; transform: translateX(-50%); font-size: 1rem; padding: 0.5rem 1rem; }
+.d-pad { position: relative; bottom: 0; left: 0; width: 160px; height: 160px; }
+.d-btn { width: 50px; height: 50px; font-size: 1.8rem; }
+.d-btn.up { top: 5px; left: 55px; } .d-btn.down { bottom: 5px; left: 55px; } .d-btn.left { top: 55px; left: 5px; } .d-btn.right { top: 55px; right: 5px; }
+.d-center { width: 40px; height: 40px; }
+.action-buttons { position: relative; bottom: 0; right: 0; flex-direction: row; gap: 1rem; align-items: flex-end; }
+.action-btn { width: 80px; height: 80px; font-size: 1.2rem; }
+.action-btn.dash { margin-left: 0; margin-bottom: 20px; }
+
+/* Grid view for games */
+.games-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; width: 100%; max-width: 1200px; margin: 0 auto;
+}
+.games-grid .game-card { width: auto; cursor: pointer; transition: transform 0.2s; }
+.games-grid .game-card:hover { transform: scale(1.05); }
+
