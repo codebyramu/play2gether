@@ -1,0 +1,212 @@
+body {
+    background-color: var(--primary);
+    touch-action: manipulation; /* disable double tap zoom */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.phone-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 2rem;
+    text-align: center;
+    box-sizing: border-box;
+}
+.phone-state.active {
+    display: flex;
+}
+
+h1, h2 {
+    font-size: 3.5rem;
+    text-shadow: 5px 5px 0 var(--text-dark);
+    margin-bottom: 2.5rem;
+    line-height: 1.1;
+}
+
+.bounce-title {
+    animation: bounce 2s infinite ease-in-out;
+}
+
+input {
+    width: 100%;
+    max-width: 350px;
+    background: white;
+    border: 8px solid var(--text-dark);
+    border-radius: 25px;
+    font-size: 3rem;
+    font-family: 'Fredoka One', cursive;
+    text-align: center;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    box-shadow: inset 0 10px 0 rgba(0,0,0,0.1);
+}
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.big-btn {
+    width: 100%;
+    max-width: 350px;
+    background: var(--secondary);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    padding: 1.5rem;
+    border: 8px solid var(--text-dark);
+    border-radius: 30px;
+    box-shadow: 0 12px 0 var(--text-dark);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.big-btn:active {
+    transform: translateY(12px);
+    box-shadow: 0 0 0 var(--text-dark);
+}
+.success-btn {
+    background: var(--success);
+}
+.ghost-btn {
+    background: transparent;
+    color: var(--text-main);
+    border: 6px dashed var(--text-main);
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+/* Avatar Slider */
+.avatar-slider {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.avatar-preview {
+    font-size: 7rem;
+    background: white;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 8px solid var(--text-dark);
+    border-radius: 50%;
+    box-shadow: 0 10px 0 var(--text-dark);
+    animation: squash 2s infinite;
+}
+.nav-btn {
+    background: var(--accent);
+    border: 6px solid var(--text-dark);
+    border-radius: 50%;
+    width: 70px; height: 70px;
+    font-size: 2rem;
+    box-shadow: 0 8px 0 var(--text-dark);
+}
+.nav-btn:active {
+    transform: translateY(8px);
+    box-shadow: 0 0 0 var(--text-dark);
+}
+
+p {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin: 0.5rem 0;
+}
+.small-text {
+    font-size: 1.3rem;
+    opacity: 0.9;
+}
+
+/* Controller State */
+.status-bar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.6);
+    padding: 1rem 1.5rem;
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 900;
+    font-size: 1.5rem;
+    border: 4px solid var(--text-dark);
+}
+
+/* Big thumb controls - massive for no-look playing */
+.d-pad {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    width: 220px;
+    height: 220px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.1);
+}
+.d-btn {
+    position: absolute;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 2.5rem;
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    z-index: 2;
+}
+.d-btn.active {
+    background: white;
+    color: var(--text-dark);
+    transform: scale(1.1);
+}
+.d-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; height: 60px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+}
+.d-btn.up { top: 10px; left: 75px; }
+.d-btn.down { bottom: 10px; left: 75px; }
+.d-btn.left { top: 75px; left: 10px; }
+.d-btn.right { top: 75px; right: 10px; }
+
+.action-buttons {
+    position: absolute;
+    bottom: 40px;
+    right: 30px;
+    display: flex;
+    gap: 1.5rem;
+    flex-direction: column;
+}
+.action-btn {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 8px solid var(--text-dark);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 10px 0 var(--text-dark);
+}
+.action-btn:active {
+    transform: translateY(10px);
+    box-shadow: 0 0 0 var(--text-dark);
+}
+.action-btn.dash { background: var(--secondary); margin-left: -50px; }
+.action-btn.jump { background: var(--primary); }
+
+/* Ripple effect for touch feedback */
+.ripple {
+    animation: rippleAnim 0.3s linear;
+}
+@keyframes rippleAnim {
+    0% { transform: scale(1); filter: brightness(1.5); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); filter: brightness(1); }
+}

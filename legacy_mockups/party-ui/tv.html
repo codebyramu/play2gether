@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayTogether - TV Big Screen</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="tv.css">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <!-- Lobby State -->
+    <div id="lobby-state" class="state-container active">
+        <div class="header">
+            <div class="code-box">
+                <h2>Join at <span>play.tv</span></h2>
+                <div class="code">WXYZ</div>
+            </div>
+            <div class="qr-mock">
+                <div class="qr-inner">QR<br>CODE</div>
+            </div>
+        </div>
+
+        <div class="arena">
+            <!-- Simulated chaotic lobby -->
+            <div class="avatar host-player" style="left: 20%; bottom: 20%; animation-delay: 0s;">
+                <div class="sprite">🦊</div>
+                <div class="name">Host</div>
+            </div>
+            <div class="avatar" style="left: 45%; bottom: 15%; animation-delay: 0.2s;">
+                <div class="sprite">🐼</div>
+                <div class="name">Bot_1</div>
+            </div>
+            <div class="avatar" style="left: 70%; bottom: 30%; animation-delay: 0.1s;">
+                <div class="sprite">🐸</div>
+                <div class="name">Bot_2</div>
+            </div>
+            <div class="avatar" style="left: 85%; bottom: 10%; animation-delay: 0.3s;">
+                <div class="sprite">🐰</div>
+                <div class="name">Bot_3</div>
+            </div>
+        </div>
+
+        <div class="game-carousel">
+            <button class="nav-btn prev">◀</button>
+            <div class="game-card active">
+                <div class="game-thumb" style="background: var(--primary);">
+                    <span class="thumb-emoji">🎨</span>
+                </div>
+                <h3>Color Rush Arena</h3>
+                <p>Match the floor color or fall!</p>
+            </div>
+            <button class="nav-btn next">▶</button>
+        </div>
+
+        <!-- Only Host can press Start from their phone, but we'll show it for preview here -->
+        <button class="start-btn" onclick="startCountdown()">HOST: START GAME!</button>
+    </div>
+
+    <!-- Countdown State -->
+    <div id="countdown-state" class="state-container">
+        <div class="massive-text" id="countdown-text">3</div>
+    </div>
+
+    <!-- Game HUD State -->
+    <div id="game-state" class="state-container">
+        <div class="hud-top">
+            <div class="timer">1:30</div>
+            <div class="objective">Target: <span style="color:var(--accent); text-shadow: 0 0 10px yellow;">YELLOW</span></div>
+            <div class="alive-count">Alive: 4/4</div>
+        </div>
+        <!-- Arena is visually abstract here for the mock -->
+        <div class="in-game-arena">
+            <div class="player-ingame" style="left:30%; top:40%; animation-delay: 0s;">🦊</div>
+            <div class="player-ingame" style="left:60%; top:50%; animation-delay: 0.2s;">🐼</div>
+            <div class="player-ingame" style="left:40%; top:70%; animation-delay: 0.1s;">🐸</div>
+            <div class="player-ingame" style="left:70%; top:30%; animation-delay: 0.4s;">🐰</div>
+        </div>
+        
+        <div class="alert-banner">GO!</div>
+        
+        <!-- Simulate finishing the game -->
+        <button class="start-btn simulate-btn" style="bottom: 20px;" onclick="showResults()">[Simulate Knockouts & End]</button>
+    </div>
+
+    <!-- Results State -->
+    <div id="results-state" class="state-container">
+        <h1 class="winner-title">WINNER!</h1>
+        <div class="podium">
+            <div class="place place-2">
+                <div class="sprite" style="animation: popIn 0.8s;">🐼</div>
+                <div class="rank">2nd</div>
+            </div>
+            <div class="place place-1">
+                <div class="sprite" style="animation: bounce 1s infinite; font-size: 10rem; margin-top:-120px;">🦊</div>
+                <div class="rank">1st</div>
+            </div>
+            <div class="place place-3">
+                <div class="sprite" style="animation: popIn 1s;">🐰</div>
+                <div class="rank">3rd</div>
+            </div>
+        </div>
+        <!-- Next round countdown -->
+        <button class="start-btn" onclick="nextRound()">NEXT ROUND IN 5...</button>
+    </div>
+
+    <script src="tv.js"></script>
+</body>
+</html>

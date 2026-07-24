@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+
+:root {
+  --primary: #FF3366; /* bright pink */
+  --secondary: #00C4FF; /* poppy cyan */
+  --accent: #FFCC00; /* candy yellow */
+  --bg-color: #7B2CBF; /* vibrant purple */
+  --text-main: #FFFFFF;
+  --text-dark: #2B2D42;
+  --success: #38B000;
+  --danger: #FF0054;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow: hidden; /* no scrolling to keep the native app feel */
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Animations that give the brand its bouncy, energetic feel */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes squash {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.1, 0.9); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes floatBg {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
+}
+
+/* Shared utility for bouncy avatars */
+.jumping-avatar {
+  font-size: 8rem;
+  animation: bounce 1s infinite ease-in-out;
+  filter: drop-shadow(0 10px 0 rgba(0,0,0,0.2));
+}

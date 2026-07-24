@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PlayTogether - Controller</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="phone.css">
+</head>
+<body>
+    
+    <!-- Join Flow -->
+    <div id="join-state" class="phone-state active">
+        <h1 class="bounce-title">Join the Party!</h1>
+        <input type="text" id="join-code" placeholder="CODE" maxlength="4" autocomplete="off">
+        <button class="big-btn" onclick="goToAvatar()">LET'S GOOO!</button>
+    </div>
+
+    <!-- Avatar Picker -->
+    <div id="avatar-state" class="phone-state">
+        <h2>Pick Your Look</h2>
+        <div class="avatar-slider">
+            <button class="nav-btn" onpointerdown="pulseBtn(this)">◀</button>
+            <div class="avatar-preview">🦊</div>
+            <button class="nav-btn" onpointerdown="pulseBtn(this)">▶</button>
+        </div>
+        <input type="text" id="nickname" placeholder="NICKNAME" value="Player1">
+        <button class="big-btn success-btn" onclick="goToWaiting()">READY!</button>
+    </div>
+
+    <!-- Waiting State -->
+    <div id="waiting-state" class="phone-state">
+        <div class="jumping-avatar">🦊</div>
+        <h2 class="bounce-title" style="margin-top:20px;">You're in!</h2>
+        <p>Warming up the arena...</p>
+        <p class="small-text">Look at the big screen!</p>
+        
+        <!-- Mock start button for testing purposes -->
+        <button class="big-btn ghost-btn" style="margin-top: 3rem;" onclick="goToController()">[MOCK START]</button>
+    </div>
+
+    <!-- Controller State -->
+    <div id="controller-state" class="phone-state" style="justify-content: flex-end; padding: 1.5rem; background: var(--bg-color);">
+        <div class="status-bar">
+            <span>🦊 Player1</span>
+            <span style="color: var(--success); text-shadow: 0 0 5px rgba(56,176,0,0.5);">ALIVE</span>
+        </div>
+        
+        <!-- Giant Left Thumb Zone -->
+        <div class="d-pad">
+            <button class="d-btn up" onpointerdown="activeBtn(this)" onpointerup="deactiveBtn(this)">▲</button>
+            <button class="d-btn left" onpointerdown="activeBtn(this)" onpointerup="deactiveBtn(this)">◀</button>
+            <button class="d-btn right" onpointerdown="activeBtn(this)" onpointerup="deactiveBtn(this)">▶</button>
+            <button class="d-btn down" onpointerdown="activeBtn(this)" onpointerup="deactiveBtn(this)">▼</button>
+            <div class="d-center"></div>
+        </div>
+        
+        <!-- Giant Right Thumb Zone -->
+        <div class="action-buttons">
+            <button class="action-btn dash" onpointerdown="pulseBtn(this)">DASH</button>
+            <button class="action-btn jump" onpointerdown="pulseBtn(this)">JUMP</button>
+        </div>
+    </div>
+
+    <script src="phone.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+
+:root {
+  --primary: #FF3366; 
+  --secondary: #00C4FF; 
+  --accent: #FFCC00; 
+  --bg-color: #7B2CBF; 
+  --text-main: #FFFFFF;
+  --text-dark: #2B2D42;
+  --success: #38B000;
+  --danger: #FF0054;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow: hidden; 
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes squash {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.1, 0.9); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes floatBg {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
+}
+
+/* Home Screen */
+.home-container {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+  background: linear-gradient(135deg, var(--secondary), var(--bg-color));
+}
+.home-title {
+  font-size: 5rem; color: var(--accent); text-shadow: 6px 6px 0 var(--text-dark); animation: bounce 2s infinite ease-in-out; margin-bottom: 3rem;
+}
+.btn-container { display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; }
+.btn {
+  background-color: var(--primary); color: white; padding: 3rem 4rem; font-size: 2.5rem; font-family: 'Fredoka One', cursive;
+  border: 8px solid var(--text-dark); border-radius: 30px; cursor: pointer; box-shadow: 0 12px 0 var(--text-dark);
+  transition: all 0.1s; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 300px;
+}
+.btn:active { transform: translateY(12px); box-shadow: 0 0 0 var(--text-dark); }
+.btn-tv { background-color: var(--primary); }
+.btn-phone { background-color: var(--success); }
+.emoji { font-size: 6rem; }
+
+/* TV Screen */
+.bg-pattern {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(var(--secondary) 20%, transparent 20%);
+  background-color: var(--bg-color); background-size: 60px 60px; opacity: 0.2; animation: floatBg 4s linear infinite; z-index: -1;
+}
+.tv-layout {
+  display: flex; flex-direction: column; height: 100vh; width: 100vw;
+}
+.tv-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 2rem; }
+.tv-btn {
+  background-color: var(--success); color: white; padding: 2rem 5rem; font-size: 3rem; font-family: 'Fredoka One', cursive;
+  border: 10px solid var(--text-dark); border-radius: 50px; cursor: pointer; box-shadow: 0 15px 0 var(--text-dark);
+  transition: all 0.1s; animation: squash 2s infinite;
+}
+.tv-btn:active { transform: translateY(15px); box-shadow: 0 0 0 var(--text-dark); animation: none; }
+.tv-btn.secondary { background-color: var(--secondary); animation: none; }
+
+.code-display-container {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+}
+.code-box-massive {
+  background: white; padding: 2rem 5rem; border-radius: 40px; border: 12px solid var(--text-dark); box-shadow: 20px 20px 0 var(--text-dark);
+  text-align: center; transform: rotate(-2deg);
+}
+.code-box-massive h2 { color: var(--text-dark); font-family: 'Nunito', sans-serif; font-size: 3rem; }
+.code-box-massive .code { font-family: 'Fredoka One', cursive; font-size: 10rem; color: var(--primary); letter-spacing: 10px; line-height: 1; }
+.qr-mock-massive {
+  width: 250px; height: 250px; background: white; border: 10px solid var(--text-dark); border-radius: 30px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 15px 15px 0 var(--text-dark); font-family: 'Fredoka One', cursive; color: var(--text-dark); font-size: 4rem; transform: rotate(3deg); text-align: center;
+}
+
+.tv-header { display: flex; justify-content: space-between; padding: 2rem 4rem; width: 100%; box-sizing: border-box; }
+.small-code-box {
+  background: white; padding: 1rem 3rem; border-radius: 30px; border: 8px solid var(--text-dark); box-shadow: 10px 10px 0 var(--text-dark); transform: rotate(-2deg);
+}
+.small-code-box h2 { color: var(--text-dark); font-family: 'Nunito', sans-serif; font-size: 1.5rem; }
+.small-code-box .code { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--primary); }
+
+.arena { flex: 1; position: relative; width: 100%; }
+.avatar { position: absolute; display: flex; flex-direction: column; align-items: center; animation: bounce 1.2s infinite ease-in-out; }
+.host-player::after { content: '👑'; position: absolute; top: -30px; font-size: 3rem; animation: squash 2s infinite; }
+.sprite { font-size: 6rem; filter: drop-shadow(0 15px 0 rgba(0,0,0,0.3)); }
+.name { background: var(--text-dark); color: white; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 900; font-size: 1.2rem; margin-top: 10px; border: 4px solid rgba(255,255,255,0.2); }
+
+/* Game Carousel */
+.game-carousel { display: flex; align-items: center; justify-content: center; gap: 3rem; margin-bottom: 3rem; width: 100%; }
+.nav-btn { background: var(--accent); border: 8px solid var(--text-dark); border-radius: 50%; width: 100px; height: 100px; font-size: 3rem; cursor: pointer; box-shadow: 0 10px 0 var(--text-dark); display: flex; align-items: center; justify-content: center; }
+.nav-btn:active { transform: translateY(10px); box-shadow: 0 0 0 var(--text-dark); }
+.game-card { background: white; border: 10px solid var(--text-dark); border-radius: 40px; padding: 2rem; text-align: center; width: 500px; box-shadow: 15px 15px 0 var(--text-dark); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.game-card h3 { color: var(--primary); font-size: 3rem; margin: 1.5rem 0 0.5rem; }
+.game-card p { color: var(--text-dark); font-size: 1.5rem; margin: 0; font-weight: 900; }
+.game-thumb { height: 200px; border-radius: 25px; border: 8px solid var(--text-dark); display: flex; align-items: center; justify-content: center; background: var(--primary); position: relative; overflow: hidden; }
+.game-thumb::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent); }
+.thumb-emoji { font-size: 8rem; animation: squash 3s infinite; }
+
+.status-text { font-size: 3rem; text-align: center; margin-top: 2rem; font-weight: bold; text-shadow: 4px 4px 0 var(--text-dark); }
+
+/* Phone Controller */
+.phone-layout {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 2rem; box-sizing: border-box; text-align: center;
+}
+.phone-title { font-size: 3.5rem; text-shadow: 5px 5px 0 var(--text-dark); margin-bottom: 2.5rem; line-height: 1.1; animation: bounce 2s infinite ease-in-out; }
+.phone-input {
+  width: 100%; max-width: 350px; background: white; border: 8px solid var(--text-dark); border-radius: 25px; font-size: 3rem; font-family: 'Fredoka One', cursive; text-align: center; padding: 1rem; margin-bottom: 2rem; color: var(--text-dark); text-transform: uppercase; box-shadow: inset 0 10px 0 rgba(0,0,0,0.1);
+}
+.phone-btn {
+  width: 100%; max-width: 350px; background: var(--secondary); color: white; font-family: 'Fredoka One', cursive; font-size: 2.5rem; padding: 1.5rem; border: 8px solid var(--text-dark); border-radius: 30px; box-shadow: 0 12px 0 var(--text-dark); cursor: pointer; transition: transform 0.1s;
+}
+.phone-btn:active { transform: translateY(12px); box-shadow: 0 0 0 var(--text-dark); }
+.phone-btn.success { background: var(--success); }
+
+.avatar-slider { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; }
+.avatar-preview { font-size: 7rem; background: white; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; border: 8px solid var(--text-dark); border-radius: 50%; box-shadow: 0 10px 0 var(--text-dark); animation: squash 2s infinite; }
+.jumping-avatar { font-size: 8rem; animation: bounce 1s infinite ease-in-out; filter: drop-shadow(0 10px 0 rgba(0,0,0,0.2)); }
+.phone-text { font-size: 1.8rem; font-weight: 900; margin: 0.5rem 0; }
+
+/* Controller State */
+.controller-layout { display: flex; flex-direction: column; height: 100vh; background: var(--bg-color); padding: 1.5rem; position: relative; }
+.status-bar { background: rgba(0,0,0,0.6); padding: 1rem 1.5rem; border-radius: 30px; display: flex; justify-content: space-between; font-weight: 900; font-size: 1.5rem; border: 4px solid var(--text-dark); }
+.d-pad { position: absolute; bottom: 30px; left: 30px; width: 220px; height: 220px; background: rgba(0,0,0,0.3); border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); }
+.d-btn { position: absolute; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 2.5rem; width: 70px; height: 70px; border-radius: 50%; z-index: 2; }
+.d-btn:active { background: white; color: var(--text-dark); transform: scale(1.1); }
+.d-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(0,0,0,0.5); border-radius: 50%; }
+.d-btn.up { top: 10px; left: 75px; } .d-btn.down { bottom: 10px; left: 75px; } .d-btn.left { top: 75px; left: 10px; } .d-btn.right { top: 75px; right: 10px; }
+.action-buttons { position: absolute; bottom: 40px; right: 30px; display: flex; gap: 1.5rem; flex-direction: column; }
+.action-btn { width: 110px; height: 110px; border-radius: 50%; border: 8px solid var(--text-dark); font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: white; box-shadow: 0 10px 0 var(--text-dark); }
+.action-btn:active { transform: translateY(10px); box-shadow: 0 0 0 var(--text-dark); }
+.action-btn.dash { background: var(--secondary); margin-left: -50px; } .action-btn.jump { background: var(--primary); }

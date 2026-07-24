@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayTogether - Choose Screen</title>
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--secondary), var(--bg-color));
+        }
+        h1 {
+            font-size: 5rem;
+            margin-bottom: 3rem;
+            text-shadow: 6px 6px 0 var(--text-dark);
+            animation: bounce 2s infinite ease-in-out;
+            color: var(--accent);
+        }
+        .btn-container {
+            display: flex;
+            gap: 3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 4rem;
+            font-size: 2.5rem;
+            font-family: 'Fredoka One', cursive;
+            border: 8px solid var(--text-dark);
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 12px 0 var(--text-dark);
+            transition: all 0.1s;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 300px;
+        }
+        .btn:active {
+            transform: translateY(12px);
+            box-shadow: 0 0 0 var(--text-dark);
+        }
+        .btn:hover {
+            filter: brightness(1.1);
+            animation: squash 0.5s ease-in-out;
+        }
+        .emoji { font-size: 6rem; }
+    </style>
+</head>
+<body>
+    <h1>PlayTogether!</h1>
+    <div class="btn-container">
+        <a href="tv.html" class="btn">
+            <span class="emoji">📺</span>
+            Big Screen
+        </a>
+        <a href="phone.html" class="btn" style="background-color: var(--success); color: white;">
+            <span class="emoji">📱</span>
+            Phone Controller
+        </a>
+    </div>
+</body>
+</html>

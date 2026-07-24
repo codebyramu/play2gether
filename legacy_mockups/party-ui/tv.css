@@ -1,0 +1,297 @@
+.bg-pattern {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(var(--secondary) 20%, transparent 20%);
+    background-color: var(--bg-color);
+    background-size: 60px 60px;
+    opacity: 0.2;
+    animation: floatBg 4s linear infinite;
+    z-index: -1;
+}
+
+.state-container {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: column;
+}
+.state-container.active {
+    display: flex;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 4rem;
+}
+.code-box {
+    background: white;
+    padding: 1rem 3rem;
+    border-radius: 30px;
+    border: 8px solid var(--text-dark);
+    box-shadow: 12px 12px 0 var(--text-dark);
+    transform: rotate(-3deg);
+}
+.code-box h2 {
+    color: var(--text-dark);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    text-transform: uppercase;
+}
+.code {
+    font-family: 'Fredoka One', cursive;
+    font-size: 7rem;
+    color: var(--primary);
+    line-height: 1;
+    letter-spacing: 5px;
+}
+
+.qr-mock {
+    width: 180px;
+    height: 180px;
+    background: white;
+    border: 8px solid var(--text-dark);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 12px 12px 0 var(--text-dark);
+    font-family: 'Fredoka One', cursive;
+    color: var(--text-dark);
+    font-size: 2.5rem;
+    transform: rotate(3deg);
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Arena */
+.arena {
+    flex: 1;
+    position: relative;
+}
+.avatar {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: bounce 1.2s infinite ease-in-out;
+}
+.host-player::after {
+    content: '👑';
+    position: absolute;
+    top: -30px;
+    font-size: 3rem;
+    animation: squash 2s infinite;
+}
+.sprite {
+    font-size: 7rem;
+    filter: drop-shadow(0 15px 0 rgba(0,0,0,0.3));
+}
+.name {
+    background: var(--text-dark);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin-top: 15px;
+    border: 4px solid rgba(255,255,255,0.2);
+}
+
+/* Game Carousel */
+.game-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+.nav-btn {
+    background: var(--accent);
+    border: 8px solid var(--text-dark);
+    border-radius: 50%;
+    width: 100px; height: 100px;
+    font-size: 3rem;
+    cursor: pointer;
+    box-shadow: 0 10px 0 var(--text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-btn:active {
+    transform: translateY(10px);
+    box-shadow: 0 0 0 var(--text-dark);
+}
+.game-card {
+    background: white;
+    border: 10px solid var(--text-dark);
+    border-radius: 40px;
+    padding: 2rem;
+    text-align: center;
+    width: 600px;
+    box-shadow: 15px 15px 0 var(--text-dark);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: rotate(2deg);
+}
+.game-card:hover {
+    transform: rotate(0deg) scale(1.05);
+    transition: all 0.3s;
+}
+.game-card h3 {
+    color: var(--primary);
+    font-size: 3rem;
+    margin: 1.5rem 0 0.5rem;
+}
+.game-card p {
+    color: var(--text-dark);
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 900;
+}
+.game-thumb {
+    height: 250px;
+    border-radius: 25px;
+    border: 8px solid var(--text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    position: relative;
+    overflow: hidden;
+}
+.game-thumb::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+}
+.thumb-emoji {
+    font-size: 8rem;
+    animation: squash 3s infinite;
+}
+
+/* Start Btn */
+.start-btn {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--success);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 4rem;
+    padding: 1.5rem 6rem;
+    border: 10px solid var(--text-dark);
+    border-radius: 80px;
+    box-shadow: 0 15px 0 var(--text-dark);
+    cursor: pointer;
+    animation: squash 2s infinite ease-in-out;
+}
+.start-btn:active {
+    transform: translate(-50%, 15px);
+    box-shadow: 0 0 0 var(--text-dark);
+    animation: none;
+}
+.simulate-btn {
+    background: var(--accent);
+    color: var(--text-dark);
+    font-size: 2rem;
+    padding: 1rem 3rem;
+}
+
+/* Countdown */
+#countdown-state {
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+}
+.massive-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 40rem;
+    color: var(--accent);
+    text-shadow: 30px 30px 0 var(--text-dark);
+    animation: popIn 1s infinite;
+}
+
+/* HUD */
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 3rem 5rem;
+    font-size: 4rem;
+    font-family: 'Fredoka One', cursive;
+    text-shadow: 6px 6px 0 var(--text-dark);
+    z-index: 10;
+}
+.in-game-arena {
+    flex: 1;
+    position: relative;
+    background: rgba(0,0,0,0.2);
+    margin: 2rem 5rem;
+    border-radius: 40px;
+    border: 10px solid var(--text-dark);
+}
+.player-ingame {
+    position: absolute;
+    font-size: 8rem;
+    animation: bounce 0.8s infinite;
+    filter: drop-shadow(0 15px 0 rgba(0,0,0,0.3));
+}
+.alert-banner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Fredoka One', cursive;
+    font-size: 15rem;
+    color: var(--primary);
+    text-shadow: 15px 15px 0 var(--text-dark);
+    animation: popIn 1s forwards;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Podium */
+#results-state {
+    align-items: center;
+    padding-top: 8rem;
+}
+.winner-title {
+    font-size: 12rem;
+    color: var(--accent);
+    text-shadow: 15px 15px 0 var(--text-dark);
+    animation: bounce 2s infinite;
+    margin-bottom: 5rem;
+    letter-spacing: 10px;
+}
+.podium {
+    display: flex;
+    align-items: flex-end;
+    gap: 3rem;
+    height: 500px;
+}
+.place {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--primary);
+    border: 10px solid var(--text-dark);
+    border-bottom: none;
+    border-radius: 30px 30px 0 0;
+    width: 250px;
+}
+.place .sprite {
+    margin-top: -100px;
+    font-size: 10rem;
+}
+.place .rank {
+    font-family: 'Fredoka One', cursive;
+    font-size: 5rem;
+    padding: 3rem 0;
+    color: white;
+    text-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+}
+.place-1 { height: 400px; background: var(--accent); z-index: 2; box-shadow: 0 -20px 50px rgba(255,204,0,0.5); }
+.place-2 { height: 280px; background: var(--secondary); }
+.place-3 { height: 200px; background: var(--primary); }
