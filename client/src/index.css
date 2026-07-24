@@ -182,9 +182,10 @@ h1, h2, h3, h4 {
 /* TV Screen */
 .tv-layout {
   display: flex; flex-direction: column; height: 100vh; width: 100vw;
+  position: relative; overflow: hidden;
 }
 
-.tv-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 2.5rem; padding: 2rem; box-sizing: border-box;}
+.tv-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 2.5rem; padding: 2rem; box-sizing: border-box; position: relative; z-index: 1; }
 
 .tv-btn {
   background: linear-gradient(145deg, var(--success), #00b33c);
@@ -227,7 +228,7 @@ h1, h2, h3, h4 {
   font-family: 'Fredoka One', cursive; color: var(--text-dark); font-size: 3rem; transform: rotate(3deg); text-align: center;
 }
 
-.tv-header { display: flex; justify-content: space-between; padding: 2rem 4rem; width: 100%; box-sizing: border-box; }
+.tv-header { display: flex; justify-content: space-between; padding: 2rem 4rem; width: 100%; box-sizing: border-box; position: relative; z-index: 1; }
 .small-code-box {
   background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px);
   padding: 1rem 2rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); border-top: 1px solid rgba(255,255,255,0.5);
@@ -236,7 +237,7 @@ h1, h2, h3, h4 {
 .small-code-box h2 { color: rgba(255,255,255,0.8); font-family: 'Nunito', sans-serif; font-size: 1.2rem; margin-bottom: 0.5rem;}
 .small-code-box .code { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--accent); letter-spacing: 4px; text-shadow: 0 0 10px var(--accent-glow); }
 
-.arena { flex: 1; position: relative; width: 100%; }
+.arena { flex: 1; position: relative; width: 100%; z-index: 1; }
 .avatar { position: absolute; display: flex; flex-direction: column; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .host-player::after { content: '👑'; position: absolute; top: -35px; font-size: 3rem; animation: bounce 2s infinite; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));}
 .sprite { font-size: 5rem; filter: drop-shadow(0 15px 20px rgba(0,0,0,0.6)); transition: transform 0.2s; }
@@ -251,6 +252,12 @@ h1, h2, h3, h4 {
 @keyframes holoShimmer {
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
+}
+
+/* `pulse` alias — used by PhoneController inline ready-button animation */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 30px var(--success-glow), 0 8px 0 rgba(0,0,0,0.4); }
+  50%        { box-shadow: 0 0 60px var(--success-glow), 0 8px 0 rgba(0,0,0,0.4); }
 }
 
 /* Phone Controller */
@@ -517,6 +524,90 @@ h1, h2, h3, h4 {
 .ready-board .avatar { position: static; font-size: 4rem; animation: none; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); }
 .ready-board .player-card.is-ready .avatar { animation: avatarJump 1.5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite; }
 .ready-board .name { font-size: 1.4rem; font-weight: 900; background: rgba(0,0,0,0.6); border-radius: 15px; padding: 0.3rem 0.8rem; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); }
+
+/* --- BigScreen Missing Classes --- */
+
+/* Animated mesh background layer used in BigScreen states */
+.bg-pattern {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(0,196,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,51,102,0.08) 0%, transparent 60%);
+  animation: bgMesh 20s ease infinite;
+}
+
+/* Games grid used in BigScreen EXPLORE state */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem; width: 100%; max-width: 1000px; padding: 0 2rem; box-sizing: border-box;
+}
+
+/* Individual game card */
+.game-card {
+  background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.35);
+  border-radius: 24px; overflow: hidden; cursor: pointer;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.3s;
+  display: flex; flex-direction: column;
+}
+.game-card:hover {
+  transform: scale(1.04) translateY(-6px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 25px var(--primary-glow);
+}
+.game-card h3 {
+  font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+  color: white; margin: 0.6rem 1.2rem 0.2rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.game-card p {
+  font-size: 1rem; color: rgba(255,255,255,0.7);
+  margin: 0 1.2rem 1.2rem; line-height: 1.4;
+}
+
+/* Game thumbnail block inside a card */
+.game-thumb {
+  width: 100%; padding-top: 56.25%; /* 16:9 */
+  position: relative; border-radius: 20px 20px 0 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.thumb-emoji {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+}
+
+/* Carousel row in BigScreen LOBBY */
+.game-carousel {
+  display: flex; align-items: center; justify-content: center;
+  gap: 2rem; padding: 1rem 2rem; z-index: 5;
+  position: relative;
+}
+
+/* Nav buttons (prev/next in carousel) */
+.nav-btn {
+  width: 70px; height: 70px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
+  border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid rgba(255,255,255,0.6);
+  color: white; font-size: 2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  user-select: none; -webkit-user-select: none;
+  touch-action: none;
+}
+.nav-btn:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+.nav-btn:active { transform: scale(0.95); }
+
+/* Status text line in BigScreen LOBBY */
+.status-text {
+  font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+  text-align: center; padding: 0.5rem 2rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 5; position: relative;
+}
 
 /* --- Custom Scrollbar --- */
 ::-webkit-scrollbar {

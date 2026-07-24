@@ -695,14 +695,15 @@ export default function PhoneController() {
 
   // ── PLAYING ───────────────────────────────────────────────────────
   if (phase === 'PLAYING') return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'linear-gradient(135deg, #0d0d1a, #1a0d33)',
-      display: 'flex', flexDirection: 'row',
-      alignItems: 'center', justifyContent: 'space-between',
-      padding: '1rem 1.5rem', boxSizing: 'border-box',
-      touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
-    }}>
+    <div
+      className="controller-layout"
+      style={{
+        background: 'linear-gradient(135deg, #0d0d1a, #1a0d33)',
+        display: 'flex', flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'space-between',
+        padding: '1rem 1.5rem', boxSizing: 'border-box',
+        touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
+      }}>
       <DisconnectedBanner />
       {/* Status bar */}
       <div style={{

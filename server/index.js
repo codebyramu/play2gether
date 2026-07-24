@@ -106,7 +106,8 @@ io.on('connection', (socket) => {
   });
 
   // ── Phone joins a room ───────────────────────────────────────────────────
-  socket.on('join_room', ({ code, name, avatar } = {}, callback) => {
+  socket.on('join_room', (payload, callback) => {
+    const { code, name, avatar } = (payload && typeof payload === 'object') ? payload : {};
     try {
       if (typeof callback !== 'function') return;
       if (!code || typeof code !== 'string') {
@@ -205,8 +206,9 @@ io.on('connection', (socket) => {
       room.lastActivity = Date.now();
       if (gameId !== undefined) room.gameId = gameId;
 
-      // Reset every player's ready state for the new game
+      // Reset every player's ready state and return room to LOBBY for the new game
       room.players.forEach(p => { p.ready = false; });
+      room.gameState = 'LOBBY';
 
       io.to(code).emit('game_confirmed', { gameId: room.gameId });
       io.to(code).emit('players_update', room.players);
@@ -324,19 +326,15 @@ io.on('connection', (socket) => {
           io.to(room.players[0].id).emit('host_assigned');
         }
 
-        // If room is now empty, schedule for deletion
-        if (room.players.length === 0 && room.displayId === null) {
-          codesToDelete.push(code);
-        } else {
-          io.to(code).emit('players_update', room.players);
-          console.log(`${playerName} left ${code}. Players remaining: ${room.players.length}`);
-        }
+        // Notify remaining players; room stays alive as long as display is connected
+        io.to(code).emit('players_update', room.players);
+        console.log(`${playerName} left ${code}. Players remaining: ${room.players.length}`);
       }
 
       // Delete rooms outside the loop to avoid mutation-during-iteration
       for (const code of codesToDelete) {
         if (rooms[code]) {
-          io.to(code).emit('room_closed', { reason: 'host_disconnected' });
+          io.to(code).emit('room_closed', { reason: 'display_disconnected' });
           io.in(code).socketsLeave(code);
           delete rooms[code];
           console.log(`Room ${code} closed (display disconnected)`);
