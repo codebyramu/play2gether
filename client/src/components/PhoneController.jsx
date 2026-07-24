@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io(`http://${window.location.hostname}:3001`);
+// ─── Socket singleton with lazy init ──────────────────────────────────────
+// Moved into a getter so it can be re-used safely without being re-created on
+// every module reload (HMR) while still living outside the component tree.
+let _socket = null;
+function getSocket() {
+  if (!_socket) {
+    _socket = io(`http://${window.location.hostname}:3001`, {
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+  }
+  return _socket;
+}
 
 const EMOJIS = ['🦊', '🐼', '🐸', '🐰', '🐯', '🦄', '🐙', '🦖'];
 
@@ -24,14 +36,37 @@ function vibrate(ms = 30) {
 // ─── OTP Code Input ───────────────────────────────────────────────
 function OtpInput({ value, onChange }) {
   const inputs = useRef([]);
+  // Pad to 4 chars with spaces for display
   const chars = (value + '    ').slice(0, 4).split('');
 
-  const handleKey = (i, e) => {
-    const v = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+  // FIX: handle backspace explicitly so mobile browsers (especially iOS Safari)
+  // that don't fire onChange on an empty field still navigate backward.
+  const handleKeyDown = (i, e) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (chars[i].trim()) {
+        // clear current cell
+        const next = (value + '    ').slice(0, 4).split('');
+        next[i] = ' ';
+        onChange(next.join('').trimEnd());
+      } else if (i > 0) {
+        // cell is already empty → clear previous cell and move focus
+        const next = (value + '    ').slice(0, 4).split('');
+        next[i - 1] = ' ';
+        onChange(next.join('').trimEnd());
+        inputs.current[i - 1]?.focus();
+      }
+    }
+  };
+
+  const handleChange = (i, e) => {
+    // Allow only A-Z letters
+    const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (!v) {
-      const next = value.slice(0, i) + ' ' + value.slice(i + 1);
-      onChange(next.trimEnd());
-      if (i > 0) inputs.current[i - 1]?.focus();
+      // Empty → handled by keyDown, but clear just in case
+      const next = (value + '    ').slice(0, 4).split('');
+      next[i] = ' ';
+      onChange(next.join('').trimEnd());
       return;
     }
     const next = (value + '    ').slice(0, 4).split('');
@@ -40,17 +75,41 @@ function OtpInput({ value, onChange }) {
     if (i < 3) inputs.current[i + 1]?.focus();
   };
 
+  // FIX: support paste of a full 4-character code
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData('text')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 4);
+    if (!pasted) return;
+    const next = (pasted + '    ').slice(0, 4);
+    onChange(next.trimEnd());
+    const focusIdx = Math.min(pasted.length, 3);
+    inputs.current[focusIdx]?.focus();
+  };
+
   return (
     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '2rem' }}>
       {chars.map((ch, i) => (
         <input
           key={i}
           ref={el => inputs.current[i] = el}
+          // FIX: inputMode="text" ensures virtual keyboard shows letters on
+          // Android/iOS. autocomplete helps some mobile browsers autofill OTPs.
           type="text"
+          inputMode="text"
+          autoCapitalize="characters"
+          autoComplete={i === 0 ? 'one-time-code' : 'off'}
+          autoCorrect="off"
+          spellCheck={false}
           maxLength={1}
           value={ch.trim()}
-          onChange={e => handleKey(i, e)}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKeyDown(i, e)}
           onFocus={e => e.target.select()}
+          onPaste={handlePaste}
           style={{
             width: '60px', height: '70px', textAlign: 'center',
             fontSize: '2.2rem', fontFamily: "'Fredoka One', cursive",
@@ -69,6 +128,40 @@ function OtpInput({ value, onChange }) {
 
 // ─── D-Pad Button ─────────────────────────────────────────────────
 function DBtn({ dir, onDown, onUp, children, style = {} }) {
+  // FIX: track whether this button is currently pressed so that
+  // onPointerLeave only fires onUp() when a press is actually active.
+  const isPressed = useRef(false);
+
+  const handleDown = (e) => {
+    e.preventDefault();
+    if (isPressed.current) return; // guard double-fires
+    isPressed.current = true;
+    vibrate(20);
+    onDown();
+    e.currentTarget.style.background = 'rgba(255,255,255,0.4)';
+    e.currentTarget.style.transform = 'scale(0.9)';
+    // FIX: capture pointer so events fire even if pointer moves off button
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleUp = (e) => {
+    e.preventDefault();
+    if (!isPressed.current) return; // guard spurious fires
+    isPressed.current = false;
+    onUp();
+    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+    e.currentTarget.style.transform = 'scale(1)';
+  };
+
+  // FIX: only cancel if pressed, and release pointer capture
+  const handleLeave = (e) => {
+    if (!isPressed.current) return;
+    isPressed.current = false;
+    onUp();
+    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+    e.currentTarget.style.transform = 'scale(1)';
+  };
+
   return (
     <button
       style={{
@@ -83,10 +176,10 @@ function DBtn({ dir, onDown, onUp, children, style = {} }) {
         WebkitTapHighlightColor: 'transparent',
         ...style,
       }}
-      onPointerDown={e => { e.preventDefault(); vibrate(20); onDown(); e.currentTarget.style.background = 'rgba(255,255,255,0.4)'; e.currentTarget.style.transform = 'scale(0.9)'; }}
-      onPointerUp={e => { e.preventDefault(); onUp(); e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
-      onPointerLeave={e => { onUp(); e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
-      onPointerCancel={e => { onUp(); e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
+      onPointerDown={handleDown}
+      onPointerUp={handleUp}
+      onPointerLeave={handleLeave}
+      onPointerCancel={handleLeave}
     >
       {children}
     </button>
@@ -95,6 +188,37 @@ function DBtn({ dir, onDown, onUp, children, style = {} }) {
 
 // ─── Action Button ────────────────────────────────────────────────
 function ActionBtn({ label, color, onDown, onUp }) {
+  // FIX: same pressed-state guard as DBtn
+  const isPressed = useRef(false);
+
+  const handleDown = (e) => {
+    e.preventDefault();
+    if (isPressed.current) return;
+    isPressed.current = true;
+    vibrate(30);
+    if (onDown) onDown();
+    e.currentTarget.style.transform = 'translateY(6px)';
+    e.currentTarget.style.boxShadow = `0 2px 0 rgba(0,0,0,0.4), 0 0 10px ${color}88`;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleUp = (e) => {
+    e.preventDefault();
+    if (!isPressed.current) return;
+    isPressed.current = false;
+    if (onUp) onUp();
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = `0 8px 0 rgba(0,0,0,0.4), 0 0 20px ${color}88`;
+  };
+
+  const handleLeave = (e) => {
+    if (!isPressed.current) return;
+    isPressed.current = false;
+    if (onUp) onUp();
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = `0 8px 0 rgba(0,0,0,0.4), 0 0 20px ${color}88`;
+  };
+
   return (
     <button
       style={{
@@ -107,10 +231,10 @@ function ActionBtn({ label, color, onDown, onUp }) {
         WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s, box-shadow 0.1s',
       }}
-      onPointerDown={e => { e.preventDefault(); vibrate(30); if(onDown) onDown(); e.currentTarget.style.transform = 'translateY(6px)'; e.currentTarget.style.boxShadow = `0 2px 0 rgba(0,0,0,0.4), 0 0 10px ${color}88`; }}
-      onPointerUp={e => { e.preventDefault(); if(onUp) onUp(); e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 0 rgba(0,0,0,0.4), 0 0 20px ${color}88`; }}
-      onPointerLeave={e => { if(onUp) onUp(); e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 0 rgba(0,0,0,0.4), 0 0 20px ${color}88`; }}
-      onPointerCancel={e => { if(onUp) onUp(); e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 0 rgba(0,0,0,0.4), 0 0 20px ${color}88`; }}
+      onPointerDown={handleDown}
+      onPointerUp={handleUp}
+      onPointerLeave={handleLeave}
+      onPointerCancel={handleLeave}
     >
       {label}
     </button>
@@ -130,67 +254,128 @@ export default function PhoneController() {
   const [isReady, setIsReady]     = useState(false);
   const [countdown, setCountdown] = useState(3);
   const [error, setError]         = useState('');
-  const timerRef = useRef(null);
+  const [socketConnected, setSocketConnected] = useState(true);
 
-  const showError = (msg) => {
+  const timerRef  = useRef(null);
+  // FIX: keep a stable trimmed-code ref so callbacks always use the latest
+  // value without needing code in their dependency arrays.
+  const codeRef   = useRef('');
+
+  const showError = useCallback((msg) => {
     setError(msg);
     vibrate([50, 30, 50]);
     setTimeout(() => setError(''), 3000);
-  };
-
-  useEffect(() => {
-    socket.on('players_update', setPlayers);
-
-    socket.on('game_confirmed', (game) => {
-      setConfirmedGame(game);
-      setIsReady(false);
-      setPhase('READY');
-      vibrate([30, 20, 30]);
-    });
-
-    socket.on('all_ready', () => {
-      vibrate([50, 30, 50, 30, 100]);
-      setPhase('COUNTDOWN');
-      startCountdown();
-    });
-
-    socket.on('game_started', () => {
-      setPhase('COUNTDOWN');
-      startCountdown();
-    });
-
-    socket.on('host_assigned', () => {
-      setIsHost(true);
-      setPhase('HOST_SELECT');
-    });
-
-    socket.on('room_closed', () => {
-      showError('Room was closed!');
-      setPhase('JOIN');
-    });
-
-    return () => {
-      socket.off('players_update');
-      socket.off('game_confirmed');
-      socket.off('all_ready');
-      socket.off('game_started');
-      socket.off('host_assigned');
-      socket.off('room_closed');
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
   }, []);
 
-  const startCountdown = () => {
+  // FIX: wrap startCountdown in useCallback so the reference is stable and
+  // the function can safely be called from socket listeners registered in the
+  // effect without capturing a stale closure.
+  const startCountdown = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     let c = 3;
     setCountdown(c);
     timerRef.current = setInterval(() => {
       c--;
-      if (c > 0) { setCountdown(c); vibrate(40); }
-      else if (c === 0) { setCountdown('GO!'); vibrate([100, 50, 100]); }
-      else { clearInterval(timerRef.current); setPhase('PLAYING'); }
+      if (c > 0) {
+        setCountdown(c);
+        vibrate(40);
+      } else if (c === 0) {
+        setCountdown('GO!');
+        vibrate([100, 50, 100]);
+      } else {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        setPhase('PLAYING');
+      }
     }, 1000);
-  };
+  }, []); // no deps – uses only refs and stable setters
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    // ── Connection health listeners ──────────────────────────────
+    const onConnect    = () => setSocketConnected(true);
+    const onDisconnect = () => setSocketConnected(false);
+
+    // ── Named handler refs so socket.off() only removes THIS component's
+    //    handler and not any other listener on the same event. ───────────
+    const onPlayersUpdate = (data) => setPlayers(Array.isArray(data) ? data : []);
+
+    const onGameConfirmed = (game) => {
+      // FIX: guard against missing/malformed payload
+      if (!game) return;
+      setConfirmedGame(game);
+      setIsReady(false);
+      setPhase('READY');
+      vibrate([30, 20, 30]);
+    };
+
+    const onAllReady = () => {
+      vibrate([50, 30, 50, 30, 100]);
+      setPhase('COUNTDOWN');
+      startCountdown();
+    };
+
+    // FIX: game_started and all_ready both lead to COUNTDOWN. Guard against
+    // double-triggering: if we're already in COUNTDOWN or PLAYING, ignore.
+    const onGameStarted = () => {
+      setPhase(prev => {
+        if (prev === 'COUNTDOWN' || prev === 'PLAYING') return prev;
+        startCountdown();
+        return 'COUNTDOWN';
+      });
+    };
+
+    const onHostAssigned = () => {
+      setIsHost(true);
+      setPhase('HOST_SELECT');
+    };
+
+    const onRoomClosed = () => {
+      showError('Room was closed!');
+      // FIX: also reset all room-related state to prevent stale data
+      setPlayers([]);
+      setSelectedGame(null);
+      setConfirmedGame(null);
+      setIsReady(false);
+      setIsHost(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setPhase('JOIN');
+    };
+
+    socket.on('connect',       onConnect);
+    socket.on('disconnect',    onDisconnect);
+    socket.on('players_update', onPlayersUpdate);
+    socket.on('game_confirmed', onGameConfirmed);
+    socket.on('all_ready',     onAllReady);
+    socket.on('game_started',  onGameStarted);
+    socket.on('host_assigned', onHostAssigned);
+    socket.on('room_closed',   onRoomClosed);
+
+    return () => {
+      // FIX: remove specific handler refs, not all listeners for the event
+      socket.off('connect',        onConnect);
+      socket.off('disconnect',     onDisconnect);
+      socket.off('players_update', onPlayersUpdate);
+      socket.off('game_confirmed', onGameConfirmed);
+      socket.off('all_ready',      onAllReady);
+      socket.off('game_started',   onGameStarted);
+      socket.off('host_assigned',  onHostAssigned);
+      socket.off('room_closed',    onRoomClosed);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [startCountdown, showError]);
+
+  // Keep codeRef in sync with state so callbacks always have the latest value
+  useEffect(() => {
+    codeRef.current = code.trim();
+  }, [code]);
 
   const handleJoin = () => {
     if (code.trim().length !== 4) { showError('Enter a 4-letter code!'); return; }
@@ -198,11 +383,35 @@ export default function PhoneController() {
   };
 
   const handleEnterRoom = () => {
-    socket.emit('join_room', { code: code.trim(), name: name.trim() || 'Player', avatar: EMOJIS[avatarIdx] }, (res) => {
+    const socket = getSocket();
+    const trimmedCode = code.trim();
+    const trimmedName = name.trim() || 'Player';
+
+    // FIX: reset ready state and other room state before joining
+    setIsReady(false);
+    setPlayers([]);
+    setSelectedGame(null);
+    setConfirmedGame(null);
+
+    socket.emit('join_room', { code: trimmedCode, name: trimmedName, avatar: EMOJIS[avatarIdx] }, (res) => {
+      if (!res) {
+        // FIX: guard against missing/null callback response (server error)
+        showError('No response from server!');
+        setPhase('JOIN');
+        return;
+      }
       if (res.success) {
-        setIsHost(res.player.isHost);
-        setPhase(res.player.isHost ? 'HOST_SELECT' : 'WAITING');
-        if (res.gameState === 'PLAYING') setPhase('PLAYING');
+        const player = res.player ?? {};
+        setIsHost(!!player.isHost);
+        // FIX: check for mid-game join BEFORE setting normal phase
+        if (res.gameState === 'PLAYING') {
+          setPhase('PLAYING');
+        } else if (res.gameState === 'COUNTDOWN') {
+          setPhase('COUNTDOWN');
+          startCountdown();
+        } else {
+          setPhase(player.isHost ? 'HOST_SELECT' : 'WAITING');
+        }
       } else {
         showError(res.error || 'Failed to join!');
         setPhase('JOIN');
@@ -213,19 +422,29 @@ export default function PhoneController() {
   const handleConfirmGame = () => {
     if (!selectedGame) { showError('Pick a game first!'); return; }
     vibrate(50);
-    socket.emit('confirm_game', { code, gameId: selectedGame.id, gameTitle: selectedGame.title, gameEmoji: selectedGame.emoji });
+    const socket = getSocket();
+    socket.emit('confirm_game', {
+      code: codeRef.current,
+      gameId: selectedGame.id,
+      gameTitle: selectedGame.title,
+      gameEmoji: selectedGame.emoji,
+    });
   };
 
   const handleReadyUp = () => {
     if (isReady) return;
     setIsReady(true);
     vibrate([50, 30, 80]);
-    socket.emit('player_ready', { code });
+    const socket = getSocket();
+    socket.emit('player_ready', { code: codeRef.current });
   };
 
+  // FIX: sendInput uses codeRef so it always has the latest trimmed code
+  // even if the `code` state hasn't propagated yet.
   const sendInput = useCallback((action, state) => {
-    socket.emit('controller_input', { code, action, state });
-  }, [code]);
+    const socket = getSocket();
+    socket.emit('controller_input', { code: codeRef.current, action, state });
+  }, []); // stable – reads from ref, not state
 
   const bgStyle = {
     position: 'fixed', inset: 0,
@@ -236,9 +455,23 @@ export default function PhoneController() {
     overflow: 'hidden', padding: '1.5rem', boxSizing: 'border-box',
   };
 
+  // ── Disconnected overlay ──────────────────────────────────────────
+  const DisconnectedBanner = () => !socketConnected ? (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+      background: 'rgba(255,0,80,0.92)', backdropFilter: 'blur(8px)',
+      textAlign: 'center', padding: '0.5rem',
+      fontFamily: "'Fredoka One', cursive", fontSize: '0.95rem',
+      boxShadow: '0 2px 12px rgba(255,0,80,0.5)',
+    }}>
+      ⚠️ Reconnecting to server…
+    </div>
+  ) : null;
+
   // ── JOIN ──────────────────────────────────────────────────────────
   if (phase === 'JOIN') return (
     <div style={bgStyle}>
+      <DisconnectedBanner />
       <h1 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '3rem', margin: '0 0 0.5rem', background: 'linear-gradient(90deg,#FF3366,#FFCC00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
         PlayTogether
       </h1>
@@ -276,6 +509,7 @@ export default function PhoneController() {
   // ── AVATAR ────────────────────────────────────────────────────────
   if (phase === 'AVATAR') return (
     <div style={bgStyle}>
+      <DisconnectedBanner />
       <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '2.2rem', marginBottom: '0.5rem', color: 'var(--accent)' }}>Pick Your Look</h2>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', margin: '1.5rem 0' }}>
@@ -326,6 +560,7 @@ export default function PhoneController() {
   // ── WAITING (non-host) ────────────────────────────────────────────
   if (phase === 'WAITING') return (
     <div style={bgStyle}>
+      <DisconnectedBanner />
       <div style={{ fontSize: '6rem', animation: 'bounce 1s infinite ease-in-out' }}>{EMOJIS[avatarIdx]}</div>
       <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '2rem', margin: '1.5rem 0 0.5rem', color: 'var(--accent)' }}>You're In! 🎉</h2>
       <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', textAlign: 'center' }}>Host is picking a game...</p>
@@ -338,6 +573,7 @@ export default function PhoneController() {
   // ── HOST_SELECT ───────────────────────────────────────────────────
   if (phase === 'HOST_SELECT') return (
     <div style={{ ...bgStyle, justifyContent: 'flex-start', padding: '1rem', overflowY: 'auto' }}>
+      <DisconnectedBanner />
       <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.8rem', margin: '0.5rem 0', color: 'var(--accent)' }}>👑 Pick a Game</h2>
       <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>Only you can choose!</p>
 
@@ -376,18 +612,27 @@ export default function PhoneController() {
   // ── READY ─────────────────────────────────────────────────────────
   if (phase === 'READY') return (
     <div style={{ ...bgStyle, flexDirection: 'row', padding: '1rem', gap: '1rem' }}>
+      <DisconnectedBanner />
       {/* Left: player list */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
         <div style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1rem', color: 'var(--accent)', marginBottom: '4px' }}>
-          {confirmedGame?.gameEmoji} {confirmedGame?.gameTitle}
+          {/* FIX: guard against null confirmedGame (READY reached without game data) */}
+          {confirmedGame
+            ? `${confirmedGame.gameEmoji ?? ''} ${confirmedGame.gameTitle ?? 'Game Selected'}`
+            : '🎮 Get Ready!'}
         </div>
-        {players.map(p => (
+        {/* FIX: show placeholder if players list is empty (no players_update yet) */}
+        {players.length === 0 ? (
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+            Loading players…
+          </div>
+        ) : players.map(p => (
           <div key={p.id} style={{
             display: 'flex', alignItems: 'center', gap: '8px',
             background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '8px 10px',
           }}>
-            <span style={{ fontSize: '1.5rem' }}>{p.avatar}</span>
-            <span style={{ fontWeight: 900, fontSize: '0.95rem', flex: 1 }}>{p.name}</span>
+            <span style={{ fontSize: '1.5rem' }}>{p.avatar ?? '❓'}</span>
+            <span style={{ fontWeight: 900, fontSize: '0.95rem', flex: 1 }}>{p.name ?? 'Player'}</span>
             <span style={{
               fontSize: '0.75rem', fontWeight: 900, padding: '3px 10px', borderRadius: '20px',
               background: p.ready ? '#38B00044' : 'rgba(255,255,255,0.1)',
@@ -434,12 +679,12 @@ export default function PhoneController() {
   if (phase === 'COUNTDOWN') {
     const colors = { 3: '#FF3366', 2: '#FFCC00', 1: '#38B000', 'GO!': '#00C4FF' };
     return (
-      <div style={{ ...bgStyle, background: `radial-gradient(circle, ${colors[countdown] || '#1a0533'}44, #0d1b4b)` }}>
+      <div style={{ ...bgStyle, background: `radial-gradient(circle, ${colors[countdown] ?? '#1a0533'}44, #0d1b4b)` }}>
         <div style={{
           fontFamily: "'Fredoka One', cursive",
           fontSize: countdown === 'GO!' ? '5rem' : '12rem',
-          color: colors[countdown] || 'white',
-          textShadow: `0 0 60px ${colors[countdown] || 'white'}`,
+          color: colors[countdown] ?? 'white',
+          textShadow: `0 0 60px ${colors[countdown] ?? 'white'}`,
           animation: 'popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275)',
         }}>
           {countdown}
@@ -458,6 +703,7 @@ export default function PhoneController() {
       padding: '1rem 1.5rem', boxSizing: 'border-box',
       touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
     }}>
+      <DisconnectedBanner />
       {/* Status bar */}
       <div style={{
         position: 'absolute', top: '0.6rem', left: '50%', transform: 'translateX(-50%)',
