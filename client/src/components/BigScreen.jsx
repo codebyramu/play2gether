@@ -70,9 +70,8 @@ export default function BigScreen() {
       } else {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
-        // BUG FIX: Reset game timer and alive players when PLAYING starts
+        // Reset game timer when PLAYING starts; alive players come from players_update
         setGameTimeSec(90);
-        setAlivePlayers(prev => prev); // will be set fresh via players_update
         setState('PLAYING');
         // Start game timer countdown
         gameTimerRef.current = setInterval(() => {
@@ -109,15 +108,28 @@ export default function BigScreen() {
     });
 
     // BUG FIX: Listen for game_confirmed — host phone confirmed a game.
+    // Server sends { gameId } only — must look up full game object from GAMES array.
     // Transitions BigScreen from LOBBY → PREGAME (ready board state).
-    socket.on('game_confirmed', (game) => {
-      setConfirmedGame(game);
+    socket.on('game_confirmed', ({ gameId } = {}) => {
+      const game = GAMES.find(g => g.id === gameId);
+      if (game) {
+        setConfirmedGame({ gameId: game.id, gameTitle: game.title, gameEmoji: game.emoji });
+      }
       setState('PREGAME');
     });
 
     // BUG FIX: Listen for all_ready — all phones tapped Ready.
+    // Server sends { gameId } — use as fallback if confirmedGame wasn't set yet.
     // Transitions BigScreen from PREGAME → COUNTDOWN.
-    socket.on('all_ready', () => {
+    socket.on('all_ready', ({ gameId } = {}) => {
+      if (gameId) {
+        const game = GAMES.find(g => g.id === gameId);
+        if (game) {
+          setConfirmedGame(prev =>
+            prev ? prev : { gameId: game.id, gameTitle: game.title, gameEmoji: game.emoji }
+          );
+        }
+      }
       setState('COUNTDOWN');
       startCountdown();
     });
@@ -134,10 +146,11 @@ export default function BigScreen() {
       startCountdown();
     });
 
-    // BUG FIX: 'state' parameter renamed to 'inputState' to avoid shadowing
-    // the component's own `state` variable (critical bug — was silently overriding state).
-    socket.on('player_input', ({ playerId, action, inputState }) => {
-      // BUG FIX: Store player input in ref for use by the game loop
+    // BUG FIX: Server sends { playerId, action, state } — 'state' is the server field name.
+    // Destructure with alias 'state: inputState' so we don't shadow the component's
+    // own `state` variable (which would have been a critical silent bug).
+    socket.on('player_input', ({ playerId, action, state: inputState }) => {
+      // Store player input in ref for use by the game loop (Color Rush etc.)
       gameInputRef.current[playerId] = gameInputRef.current[playerId] || {};
       gameInputRef.current[playerId][action] = inputState;
     });
@@ -266,36 +279,31 @@ export default function BigScreen() {
           ))}
         </div>
 
-        <div className="game-carousel">
-          {/* BUG FIX: Navigate carousel locally; socket.emit('change_game') lets the
-              phone host drive it. The BigScreen can also scroll locally with these buttons. */}
-          <div className="nav-btn" onClick={() => {
-            setSelectedGameIdx(prev => {
-              const next = prev - 1;
-              return next < 0 ? GAMES.length - 1 : next;
-            });
-          }}>◀</div>
-
-          {/* BUG FIX: Guard against selectedGameIdx out-of-bounds with nullish fallback */}
-          {currentGame && (
-            <div className="game-card">
-              <div className="game-thumb" style={{ background: currentGame.color }}>
-                <span className="thumb-emoji">{currentGame.emoji}</span>
-              </div>
-              <h3>{currentGame.title}</h3>
-              <p>{currentGame.desc}</p>
-            </div>
-          )}
-
-          <div className="nav-btn" onClick={() => {
-            setSelectedGameIdx(prev => {
-              const next = prev + 1;
-              return next >= GAMES.length ? 0 : next;
-            });
-          }}>▶</div>
+        <div className="tv-center" style={{ justifyContent: 'flex-start', paddingTop: '2rem', flex: 1, overflowY: 'auto' }}>
+          <div className="games-gallery">
+            {GAMES.map((g, index) => {
+              const isSelected = index === selectedGameIdx;
+              return (
+                <div 
+                  key={g.id} 
+                  className={`gallery-game-card ${isSelected ? 'selected' : ''}`} 
+                  style={{ 
+                    borderTop: `3px solid ${g.color}`,
+                    boxShadow: isSelected ? `0 0 20px ${g.color}, 0 0 40px ${g.color}66` : 'none',
+                    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div className="emoji">{g.emoji}</div>
+                  <div className="title">{g.title}</div>
+                  <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0' }}>{g.desc}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="status-text" style={{ color: host ? 'var(--success)' : 'white' }}>
+        <div className="status-text" style={{ color: host ? 'var(--success)' : 'white', marginBottom: '2rem' }}>
           {host ? `${host.name} is picking a game...` : 'Waiting for players...'}
         </div>
       </div>
